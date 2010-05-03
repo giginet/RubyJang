@@ -44,7 +44,7 @@ class Tehai < Array
         end
         return a
     end
-    #順子の候補になる牌を配列で返す
+    #順子の候補を配列で返す
     def search_syuntsu
         a = Array.new
         uniq.each do |p|

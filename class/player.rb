@@ -38,25 +38,20 @@ class Player
         @tmp_tehai = @pais.dup.push(@pai)
         result = false
         h = @tmp_tehai.search_heads
-        puts "対子:#{h.length}"
-        puts "刻子:#{@tmp_tehai.search_koutsu.length}"
-        puts "順子:#{@tmp_tehai.search_syuntsu.length}"
         if h.length==7
             #七対子の判定
             #頭の候補を絞った段階で、対子が７種類存在すれば七対子
             result = true
-            puts "七対子"
         elsif kokushi?
             #国士無双の判定
             #面倒だから別メソッドにしました
-            puts "国士無双"
+            result = true
         elsif false
             #十三不塔の判定
             #そんなルールはない！！！
         else
             #その他の和了形の判定
             h.each do |head|
-                puts "head"
                 #手牌tmpをリセット
                 @tmp_tehai = @pais.dup.push(@pai)
                 #頭候補をtmpから削除
@@ -81,6 +76,8 @@ class Player
         return result
     end
     #テンパってるかどうか
+    #面倒くさい
+    #
     def tempai?
     end
     #待ち牌をArrayで返す
@@ -150,7 +147,6 @@ class Player
                 #手牌の種類を調べて、13種類あれば国士無双
                 if @tmp_tehai.count_kinds ==13
                     r = true
-                    puts "国士無双！"
                 end
             end
         end
