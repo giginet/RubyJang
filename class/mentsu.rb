@@ -8,6 +8,15 @@ class Mentsu
         #暗刻、暗槓 、暗順子かどうか
         @fooroh = false
     end
+    def eql?(other)
+      @pais.ripai == other.get_pais.pihai
+    end
+    def ==(other)
+      eql?(other)
+    end
+    def hash
+      [@pais].hash
+    end
     #入力された牌から、面子の種類を判定する
     def set_kind
         if @pais.length==2 && @pais[0]==@pais[1]
@@ -36,4 +45,9 @@ class Mentsu
             puts "#{p.get_name}:"
         end
     end
+    #特定の牌を含んでいるかどうか
+    def has?(p)
+        @pais.has?(p)
+    end
+    attr_reader :fooroh
 end

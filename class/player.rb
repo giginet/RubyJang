@@ -23,7 +23,7 @@ class Player
     end
     #手牌を理牌する
     def ripai
-        @pais.sort!{|a,b|(a.kind<=>b.kind).nonzero? || a.number<=>b.number}
+        @pais.ripai!
     end
     #手牌に配列をセット
     def push_tehai(elm)
@@ -33,19 +33,24 @@ class Player
     def tsumo(p)
         @pai = p
     end
-    #上がってるかどうか
+    #上がっているかどうか
     def agari?
+        a = get_agari
+        return !a.empty?
+    end
+    #和了形の一覧を配列で返す
+    def get_agari
+        agari_array = Array.new
         @tmp_tehai = @pais.dup.push(@pai)
-        result = false
         h = @tmp_tehai.search_heads
         if h.length==7
             #七対子の判定
             #頭の候補を絞った段階で、対子が７種類存在すれば七対子
-            result = true
+            agari_array.push(Agari.new(@pais,@pai,h))    
         elsif kokushi?
             #国士無双の判定
             #面倒だから別メソッドにしました
-            result = true
+            agari_array.push(Agari.new(@pais,@pai,h))    
         elsif false
             #十三不塔の判定
             #そんなルールはない！！！
@@ -65,15 +70,18 @@ class Player
                     end
                     #tmpが空になったら和了確定
                     if @tmp_tehai.empty?
-                        result = true
+                        #面子スタックの先頭に頭を格納
+                        @mentsu_stack.unshift(head)
+                        agari_array.push(Agari.new(@pais,@pai,@mentsu_stack))    
                         break
                     end
                     @cursols = [0,0,0,0]
                     @stack_cursol = 0
+                    @mentsu_stack = Array.new
                 end
             end
         end
-        return result
+        return agari_array
     end
     #テンパってるかどうか
     #面倒くさい
@@ -81,10 +89,14 @@ class Player
     def tempai?
     end
     #待ち牌をArrayで返す
+    #テンパイ書いてから
     def get_machis
     end
     #付いた役をArrayで返す
     def get_yakus
+        if agari?
+
+        end
     end
     #点数を返す
     def get_score

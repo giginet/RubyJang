@@ -92,4 +92,13 @@ class Tehai < Array
         end
         return hash
     end
+    def ripai
+        return sort{|a,b|(a.kind<=>b.kind).nonzero? || a.number<=>b.number}
+    end
+    def ripai!
+        return sort!{|a,b|(a.kind<=>b.kind).nonzero? || a.number<=>b.number}
+    end
+    def has?(p)
+      return count(p) > 0
+    end
 end
