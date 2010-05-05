@@ -1,6 +1,7 @@
 #Stageクラス。主に場を管理。
 class Stage
     def initialize
+        $stage = self
         #壁牌
         @yama = Array.new
         #場風

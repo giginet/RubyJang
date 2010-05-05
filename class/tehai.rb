@@ -13,6 +13,17 @@ class Tehai < Array
         end
         return c
     end
+    #ヤオ九牌の数を数える
+    #タンヤオとか、混老頭とか、九種九牌の判定用
+    def count_yaochu
+      c = 0
+      each do |p|
+        if p.yaochu?
+          c+=1
+        end
+      end
+      return c
+    end
     #対子を配列で返す
     def search_heads
         a = Array.new
@@ -37,7 +48,7 @@ class Tehai < Array
     #刻子の候補を配列で返す
     def search_koutsu
         a = Array.new
-        uniq.each do |p|
+        each do |p|
             if has_koutsu?(p)
                 a.push(Mentsu.new(p,p,p))
             end
@@ -47,7 +58,7 @@ class Tehai < Array
     #順子の候補を配列で返す
     def search_syuntsu
         a = Array.new
-        uniq.each do |p|
+        each do |p|
             unless (p+1).nil? || (p+2).nil? || p.kind==3
                 if count(p+1)>0 && count(p+2)>0
                     a.push(Mentsu.new(p,p+1,p+2))
@@ -56,12 +67,16 @@ class Tehai < Array
         end
         return a
     end
+    #暗刻の候補を配列で返する
+    def search_ankou
+        return search_koutsu.delete_if{|m|m.fooroh}
+    end
     #入力された面子を削除するメソッド
     def pop_mentsu(mentsu)
         if has_mentsu?(mentsu)
             mentsu.get_pais.get_hash.each do |k,v|
                 v.times do
-                  delete_at(index(k))
+                    delete_at(index(k))
                 end
             end
         end
@@ -99,6 +114,6 @@ class Tehai < Array
         return sort!{|a,b|(a.kind<=>b.kind).nonzero? || a.number<=>b.number}
     end
     def has?(p)
-      return count(p) > 0
+        return count(p) > 0
     end
 end

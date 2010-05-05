@@ -20,6 +20,8 @@ class Player
         @stack_cursol = 0
         @mentsus = Array.new
         @cursols = [0,0,0,0]
+        #和了形格納
+        @agaris = Array.new
     end
     #手牌を理牌する
     def ripai
@@ -36,52 +38,59 @@ class Player
     #上がっているかどうか
     def agari?
         a = get_agari
+        get_yaku
         return !a.empty?
+    end
+    def get_yaku
+        @agaris.each do |a|
+            a.get_yaku
+            puts "---------------------"
+        end
     end
     #和了形の一覧を配列で返す
     def get_agari
-        agari_array = Array.new
+        @agaris = Array.new
         @tmp_tehai = @pais.dup.push(@pai)
         h = @tmp_tehai.search_heads
         if h.length==7
             #七対子の判定
             #頭の候補を絞った段階で、対子が７種類存在すれば七対子
-            agari_array.push(Agari.new(@pais,@pai,h))    
+            @agaris.push(Agari.new(@pais,@pai,h,self))    
         elsif kokushi?
             #国士無双の判定
             #面倒だから別メソッドにしました
-            agari_array.push(Agari.new(@pais,@pai,h))    
+            @agaris.push(Agari.new(@pais,@pai,h,self))    
         elsif false
             #十三不塔の判定
             #そんなルールはない！！！
-        else
-            #その他の和了形の判定
-            h.each do |head|
-                #手牌tmpをリセット
-                @tmp_tehai = @pais.dup.push(@pai)
-                #頭候補をtmpから削除
-                @tmp_tehai = @tmp_tehai.pop_mentsu(head)
-                #想定しうる、面子のリストを作成
-                @mentsus = @tmp_tehai. search_koutsu+@tmp_tehai.search_syuntsu
-                #再帰的に順子、刻子を発見して、tmpの長さが０になったら和了
-                if @mentsus.length >= 4
-                    while @stack_cursol >= 0 && !@tmp_tehai.empty?
-                        search_agari
-                    end
-                    #tmpが空になったら和了確定
-                    if @tmp_tehai.empty?
-                        #面子スタックの先頭に頭を格納
-                        @mentsu_stack.unshift(head)
-                        agari_array.push(Agari.new(@pais,@pai,@mentsu_stack))    
-                        break
-                    end
-                    @cursols = [0,0,0,0]
-                    @stack_cursol = 0
-                    @mentsu_stack = Array.new
+        end
+        #その他の和了形の判定
+        h.each do |head|
+            #手牌tmpをリセット
+            @tmp_tehai = @pais.dup.push(@pai)
+            #頭候補をtmpから削除
+            @tmp_tehai = @tmp_tehai.pop_mentsu(head)
+            #想定しうる、面子のリストを作成
+            @mentsus = @tmp_tehai.search_koutsu+@tmp_tehai.search_syuntsu
+            #再帰的に順子、刻子を発見して、tmpの長さが０になったら和了
+            if @mentsus.length >= 4
+                while @stack_cursol >= 0 && !@tmp_tehai.empty?
+                    search_agari
                 end
+                #tmpが空になったら和了確定
+                if @tmp_tehai.empty?
+                    #面子スタックの先頭に頭を格納
+                    @mentsu_stack.unshift(head)
+                    @agaris.push(Agari.new(@pais,@pai,@mentsu_stack,self))    
+                    break
+                end
+                @cursols = [0,0,0,0]
+                @stack_cursol = 0
+                @mentsu_stack = Array.new
             end
         end
-        return agari_array
+
+        return @agaris
     end
     #テンパってるかどうか
     #面倒くさい
@@ -114,6 +123,7 @@ class Player
     #カーソルを一つ進めて、指定された面子に必要な牌を手牌バッファから抜き出す
     def next_stack(mentsu)
         if @tmp_tehai.has_mentsu?(mentsu)
+            @mentsu_stack.push[@stack_cursol] = mentsu
             @tmp_tehai = @tmp_tehai.pop_mentsu(mentsu)
             @stack_cursol +=1
         else
@@ -168,4 +178,5 @@ class Player
         #十三不塔の判定
         #Mentsu.tartsu?が乗ってから作る
     end
+    attr_reader :kaze
 end

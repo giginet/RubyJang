@@ -15,7 +15,7 @@ class Pai
         @kind.eql?(other.kind) && @number.eql?(other.number)
     end
     def ==(other)
-      return eql?(other)
+        return eql?(other)
     end
     #n個先の牌を返す
     def +(n)
@@ -85,14 +85,24 @@ class Pai
         end
         return @red || dora
     end
+    def jihai?
+        return @kind==3
+    end
     def jikaze?(w)
-        @kind == 3 && @number == w+4
+        @kind == 3 && @number == w+1
     end
     def bakaze?
-        @kind == 3 && @number == $stage.bakaze + 4
+        @kind == 3 && @number == $stage.bakaze + 1
     end
-    def yakuhai?
-        return sangen? || bakaze? || jikaze?
+    def yakuhai?(w)
+        return sangen? || bakaze? || jikaze?(w)
+    end
+    def hashihai?
+        if @kind !=3
+            return @number == 1 || @number == 9
+        else
+            return false
+        end
     end
     attr_reader :kind,:number
 end

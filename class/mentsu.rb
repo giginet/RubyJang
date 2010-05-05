@@ -9,13 +9,13 @@ class Mentsu
         @fooroh = false
     end
     def eql?(other)
-      @pais.ripai == other.get_pais.pihai
+        @pais.ripai == other.get_pais.ripai
     end
     def ==(other)
-      eql?(other)
+        eql?(other)
     end
     def hash
-      [@pais].hash
+        [@pais].hash
     end
     #入力された牌から、面子の種類を判定する
     def set_kind
@@ -37,6 +37,7 @@ class Mentsu
     end
     #面子から牌を取り出す
     def get_pais
+        @pais.ripai
         return @pais
     end
     #面子
@@ -48,6 +49,27 @@ class Mentsu
     #特定の牌を含んでいるかどうか
     def has?(p)
         @pais.has?(p)
+    end
+    #入力された面子は違う記号、同じ構成牌での面子か
+    def same_number?(m)
+        f = false
+        if get_kind !=3 && m.get_kind!=3
+            if get_pais.length == m.get_pais.length
+                for i in 0...get_pais.length
+                    f= true
+                    if get_pais[i].number != m.get_pais[i].number
+                        f = false
+                    end
+                end
+            end
+        end
+        return true
+    end
+    def ex_pais
+      @pais.each do |p|
+        puts "#{p.get_name}"
+      end
+      puts "--------------"
     end
     attr_reader :fooroh
 end
