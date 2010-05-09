@@ -1,5 +1,13 @@
 class Image
     def initialize(x=0,y=0,fn="")
+        @x = x
+        @y = y
+        alpha(100)
+        load_image(fn)
+        @anime = false
+        @transparent = false
+    end
+    def act
     end
     def alpha(n,f=false)
         if f
@@ -9,15 +17,11 @@ class Image
         end
         @alpha = n
     end
-    def render(abs=false)
+    def render
         if @alpha !=255
             @image.set_alpha(SDL::SRCALPHA,@alpha)
         end
-        if abs
-            $screen.put(@image,@x+@w/2,@y+@h/2)
-        else
-            $screen.put(@image,@x+$scroll.x-@w/2,@y+$scroll.y-@h/2)
-        end
+        $screen.put(@image,@x,@y)
     end
     def anime?
         return @anime
@@ -25,7 +29,6 @@ class Image
     def load_image(fn)
         @image = SDL::Surface.load("image/#{fn}")
         @h = @image.h
-        #@image.set_alpha(SDL::SRCALPHA,@alpha)
         @w = @image.w
     end
     #回転メソッド

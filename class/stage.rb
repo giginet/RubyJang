@@ -2,6 +2,7 @@
 class Stage
     def initialize
         $stage = self
+        @turn = 0
         #壁牌
         @yama = Array.new
         #場風
@@ -56,7 +57,7 @@ class Stage
         end
         $players[0].tsumo(@yama.shift)
         $players[0].debug
-        $players[0].get_tehai
+        $players[0].render_tehai
         puts $players[0].agari?
     end
     #洗牌
@@ -66,12 +67,13 @@ class Stage
     #現在のドラをArrayで返す
     def get_doras(reach=false)
         result = Array.new
-        (0..@kan).to_a.each do |d|
-            result.push(@doras[d])
+        (0..@kan_count).to_a.each do |d|
+            result.push(@doras[d].next)
             if reach
-                result.push(@uradoras[d])
+                result.push(@uradoras[d].next)
             end
         end
+        return result
     end
     attr_reader :bakaze
 end

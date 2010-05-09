@@ -17,7 +17,7 @@ class Yaku
     return @fan
   end
   def yakuman?
-    return @yaku>0
+    return @fan>=13
   end
   attr_reader :score,:fan
 end

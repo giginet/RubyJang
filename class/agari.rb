@@ -1,10 +1,13 @@
 #和了形クラス。和了形の面子の解釈の状態を保持
+require "class/check.rb"
 class Agari
+    include Check
     def initialize(tehai,tsumohai,mentsus,player,tsumo=true)
         @pais = tehai
         @pai = tsumohai
         @tehai = @pais.dup.push(@pai)
         #ツモ上がりしたかどうか
+        #@tsumo = tsumo
         @tsumo = tsumo
         #面子のスタックをそのまま格納
         #おそらく容量５で頭＋面子*4が格納されているはず
@@ -14,6 +17,12 @@ class Agari
         @player = player
         #面前かどうか（全ての面子を検索して、全てが副露してないとき）
         @menzen = menzen?
+        @yakuman = false
+        @fu = 20
+        @fan = 0
+        @pinhuo = false
+        @tiitoi = false
+        @checked = false #役の判定が終わっているかどうか
     end
     #面前かどうか調べる
     def menzen?
@@ -34,399 +43,159 @@ class Agari
             if @mentsus.length == 7
                 #七対子形の場合
                 @yakus.push(Yaku.new("七対子",2))
+                @tiitoi = true
             end
-            puts "-----------------"
             @mentsus.each do |m|
                 m.ex_pais
             end
-            tanyao?
-            pinhu?
-            yakuhai?
-            epei?
-            ryanpei?
-            toitoi?
-            sanan?
-            suan?
-            sankan?
-            sukan?
-            doujyun?
-            doukou?
-            ittu?
-            honroh?
-            honitsu?
-            chanta?
-            dsangen?
-            ssangen?
-            chinroh?
-            tooe?
+            check_yaku
         end
-        @yakus.each do |y|
-            puts y.get_name
+        #役満が一つでも含まれていたら、他の役を全て無効に
+        yakuman = @yakus.select{|y|y.yakuman?}
+        if !yakuman.empty?
+            @yakus.delete_if{|y|!y.yakuman?}
+            @mes = "役満"
+            @yakuman = true
         end
-
+        return @yakus
+    end
+    def get_score
+        calc_score
+        return {:fu=>@fu,:fan=>@fan,:score=>@score,:message=>@mes,:yaku=>@yakus}
     end
     #点数を計算する
-    def get_score
+    def calc_score
         #yakus配列を全て調査
         #一つでも役満があったら、役満以外を消去
         #役満がなかったら、役の合計から半数を求める。
         #数え役満はとりあえずなしの方向で（合計が13飜以上になったときに別処理）
         get_yaku
-        return 0
-    end
-    #各役の判定
-    #断ヤオ
-    #ヤオ九牌が０こならtrue
-    #暫定的に喰い断を認める
-    def tanyao?
-        f = @tehai.count_yaochu == 0
-        if f
-            @yakus.push(Yaku.new("タンヤオ",1))
+        #ドラの加算
+        dora=0
+        $stage.get_doras(@player.reach?).each do |d|
+            dora +=@tehai.count(d)
         end
-        return f
-    end
-    #平和
-    #面子が全て順子である
-    #待ち牌が両面待ちである
-    #役牌が含まれていない。
-    def pinhu?
-        r = true
-        #全ての面子の種類が１で、かつ手牌に全て含まれている。
-        @mentsus[1...@mentsus.length].each do |m|
-            if m.get_kind != 1
-                r = false
-            end      
+        if dora > 0
+            @yakus.push(Yaku.new("ドラ",dora))
         end
-        if @mentsus.first.get_pais.first.yakuhai?(@player.kaze)
-            r = false
-        end
-        if !@menzen
-            r = false
-        end
-        if r
-            @yakus.push(Yaku.new("平和",1))
-        end
-    end
-    #役牌
-    #刻子かつ、牌が役牌である
-    def yakuhai?
-        @mentsus.each do |m|
-            if m.get_kind == 3 
-                if m.get_pais.first.jikaze? && m.get_pais.first.bakaze?
-                    #ダブ東、ダブ南
-                    @yakus.push(Yaku.new("役牌",2))
-                elsif m.get_pais.first.yakuhai?
-                    @yakus.push(Yaku.new("役牌",1))
-                end
-            end
-        end
-    end
-    #一盃口
-    #面子をuniqしたとき、長さが4になればよい（重複が1種類ある）
-    def epei?
-        if @mentsus.uniq.length == 4 && @menzen 
-            @yakus.push(Yaku.new("一盃口",1))
-        end
-    end
-    #二盃口
-    #面子をuniqしたとき、長さが3になればよい（重複が2種類ある）
-    def ryanpei?
-        if @mentsus.uniq.length == 3 && @menzen 
-            @yakus.push(Yaku.new("二盃口",3))
-        end
-    end
-    #対々和
-    #刻子が４つある
-    def toitoi?
-        c = 0
-        @mentsus.each do |m|
-            if m.get_kind == 2
-                c+=1
-            end
-        end
-        f = c == 4
-        if f
-            @yakus.push(Yaku.new("対々和",2))
-        end
-        return f
-    end
-    #三暗刻
-    def sanan?
-        #暗刻が３つある
-        c = 0
-        @mentsus.each do |m|
-            if m.get_kind == 2
-                c+=1
-            end
-        end
-        if c > 3
-            @yakus.push(Yaku.new("三暗刻",2))
-        end
-        return c >= 3
-    end
-    #三色同順
-    #順子が３つ以上の時
-    def doujyun?
-        f = false
-        colors = Array.new(3,false)
-        syuntsu = @tehai.search_syuntsu
-        #三種類あるか調査
-        if syuntsu.length >=3
-            syuntsu.each do |s|
-                colors[s.get_pais.first.kind] = true
-            end
-            #全て同じ順子かチェック
-            if colors[0] && colors[1] && colors[2]
-                f = true
-                syuntsu.each do |s|
-                    syuntsu.each do |t|
-                        if !s.same_number?(t)
-                            f = false
-                            break
-                        end
-                    end
-                end
-            end
-        end
-        if f
-            @yakus.push(Yaku.new("三色同順",2))
-        end
-        return f
-    end
-    #三色同刻
-    def doukou?
-        f = false
-        colors = Array.new(3,false)
-        koutsu = @tehai.search_koutsu
-        #三種類あるか調査
-        if koutsu.length >=3
-            koutsu.each do |k|
-                colors[k.get_pais.first.kind] = true
-            end
-            #全て同じ順子かチェック
-            if colors[0] && colors[1] && colors[2]
-                f = true
-                koutsu.each do |s|
-                    koutsu.each do |t|
-                        if s.same_number?(t)
-                            f = false
-                            break
-                        end
-                    end
-                end
-            end
-        end
-        if f
-            @yakus.push(Yaku.new("三色同刻",2))
-        end
-        return f
-    end
-    #小三元
-    def ssangen?
-        a = @mentsus.first.get_pais.first.sangen?
-        c = 0
-        @mentsus.each do |m|
-            if m.get_kind == 2 && m.get_pais.first.sangen?
-                c +=1
-            end
-        end
-        f = a && c>2
-        if f
-            @yakus.push(Yaku.new("小三元",2))
-        end
-        return f
-    end
-    #一気通貫
-    #同じ種類の牌が9種類以上
-    #1~9の全ての数字がある
-    def ittu?
-        (0..2).to_a.each do |k|
-            flag = true
-            (1..9).to_a.each do |n|
-                p = Pai.new(k,n)
-                if @tehai.count(p) ==0
-                    flag = false
-                end
-            end
-            if flag
-                @yakus.push(Yaku.new("一気通貫",2))
-                break
-                return true
-            end
-        end
-    end
-    #混老頭
-    #ヤオ九牌の合計が14であるかどうか
-    def honroh?
-        f = @tehai.count_yaochu == 14
-        if f
-            @yakus.push(Yaku.new("混老頭",2))
-        end
-        return f
-    end
-    #チャンタ・純チャン
-    def chanta?
-        cflag = true
-        jflag = true
-        @mentsus.each do |m|
-            if m.get_pais.select{|p|p.hashihai?}.empty?
-                jflag = false
-                cflag = false
-            elsif m.get_pais.select{|p|(p.hashihai?||p.jihai?)}.empty?
-                cflag = false
-            end
-        end
-        if jflag
-            @yakus.push(Yaku.new("純チャン",3))
-        elsif cflag
-            @yakus.push(Yaku.new("チャンタ",2))
-        end
-        return jflag || cflag
-
-    end
-    #混一色・清一色
-    def honitsu?
-        kind = nil
-        #0清一色1混一,2何でもない
-        f = 0
-        @tehai.each do |p|
-            if p.jihai?
-                f = 1
-            else
-                if !kind.nil?
-                    if kind!=p.kind
-                        f=2
-                        break
-                    end
-                end
-                kind = p.kind
-            end
-        end
-        if f==0
-            @yakus.push(Yaku.new("清一色",6))
-            return true
-        elsif f==1
-            @yakus.push(Yaku.new("混一色",2))
-            return true
+        #符の計算
+        if @tiitoi
+            #七対子なら25符確定
+            @fu = 25
         else
-            return false
-        end
-    end
-    #三槓子
-    def sankan?
-        f = true
-        c = 0
-        @mentsus[1...@mentsus.length].each do |m|
-            unless m.get_kind == 3
-                c +=1
+            #門前ロン
+            if @menzen && !@tsumo
+                @fu +=10
+            elsif !@menzen && !@tsumo && @pinhu
+                #喰い平和ロン上がりで30符
+                @fu +=10
             end
-        end
-        if c==3
-            @yakus.push(Yaku.new("三槓子",2))
-        end
-        return f
-    end
-    #############
-    #役満
-    #############
-    #四暗刻（単騎含め）
-    def suan?
-        c = 0
-        @mentsus.each do |m|
-            if m.get_kind == 2
-                c+=1
-            end
-        end
-        #手牌の中に暗刻が４つあれば、四暗刻単騎
-        if @pais.search_ankou.length ==4
-            @yakus.push(Yaku.new("四暗刻（単騎）",26))
-            f = true
-            #手牌、ツモ牌含めた中に４つあれば、四暗刻
-        elsif c == 4
-            @yakus.push(Yaku.new("四暗刻",13))
-            f = true
-        end
-        return c==4
-    end
-    #大三元
-    def dsangen?
-        c = 0
-        @mentsus.each do |m|
-            if m.get_kind == 2 && m.get_pais.first.sangen?
-                c +=1
-            end
-        end
-        f = c>3
-        if f
-            @yakus.push(Yaku.new("大三元",13))
-        end
-        return f
-    end
-    #字一色
-    def tooe?
-        f = true
-        @tehai.each do |p|
-            if !p.jihai?
-                f = false
-            end
-        end
-        if f
-            @yaku.push(Yaku.new("字一色",13))
-        end
-        return f
-    end
-    #緑一色
-    #清老頭
-    def chinroh?
-        f = false
-        if @tehai.count_yaochu == 14
-            f = true
-            @tehai.each do |p|
-                if p.jihai?
-                    f = false
-                    break
-                end
-            end
-        end
-        if f
-            @yaku.push(Yaku.new("清老頭",13))
-        end
-        return f
-    end
-    #大四喜
-    #小四喜
-    #四槓子
-    def sukan?
-        f = true
-        @mentsus[1...@mentsus.length].each do |m|
-            unless m.get_kind == 3
-                f = false
-            end
-        end
-        if f
-            @yakus.push(Yaku.new("四槓子",13))
-        end
-        return f
-    end
-    #九蓮宝燈
-    #国士無双
-    def kokushi?
-        r = false
-        #対子が一つである
-        if @tehai.search_heads.length ==1
-            #手牌が全てヤオ九牌である
-            if @tehai.count_yaochu==14
-                #手牌の種類を調べて、13種類あれば国士無双
-                if @pais.count_kinds ==13    
-                    r = true
-                    @yakus.push(Yaku.new("国士無双（単騎待ち）",26))
-                elsif @tehai.count_kinds ==13
-                    @yakus.push(Yaku.new("国士無双",13))
-                    r = true
-                end
-            end
-        end
-        return r
-    end
 
+            #刻子、槓子を元に符を出す
+            @mentsus.each do |m|
+                if m.get_kind == 2 || m.get_kind == 3
+                    if m.get_pais.count_yaochu >= 3
+                        f = 0
+                        if m.get_kind == 2
+                            if m.fooroh
+                                f = 2
+                            else
+                                f = 4
+                            end
+                        elsif m.get_kind == 3
+                            if m.fooroh
+                                f = 8
+                            else
+                                f = 16
+                            end
+                        end
+                        #ヤオ九牌なら符を二倍
+                        if m.get_pais.count_yaochu >=3
+                            f *=2
+                        end
+                        @fu +=f
+                    end
+                end
+            end
+            #雀頭が役牌の時2符
+            if @mentsus.first.get_pais.first.yakuhai?(@player.kaze)
+                @fu +=2
+            end
+            #ツモ和了の時に2符
+            if @tsumo
+                @fu +=2
+            end
+            #ペンチャン、カンチャン、単騎待ちのときに2符
+            machi = get_machi
+            if machi[0] || machi[2] || machi[4]
+                @fu +=2
+            end
+            #符の10の位を切り上げる
+            @fu = ((@fu.to_f/10).ceil)*10
+        end
+        #飜数の計算
+        @fan = 0
+        @yakus.each do |y|
+            @fan += y.get_fan
+        end
+        @score = @fu*(2**(@fan+2))
+        #10の位で切り上げる
+        @score = ((@score*4.to_f/100)).ceil*100
+        if @score >= 8000
+            if @yakuman
+                @mes = "役満"
+                @score = (@fan/13)*48000
+            elsif @fan == 5
+                @mes = "満貫"
+                @score = 8000 
+            elsif @fan < 8
+                @mes = "跳満"
+                @score = 12000 
+            elsif @fan < 11
+                @mes = "倍満"
+                @score = 16000 
+            elsif @fan < 13
+                @mes = "三倍満"
+                @score = 24000 
+            elsif!@yakuman
+                @mes = "数え役満"
+                @score = 32000 
+            end
+        else
+            @mes = "#{@fu}符#{@fan}飜"
+        end
+    end
+    def get_machi
+        #ツモ牌を含む面子を検索
+        machi = Array.new(5,false)
+        @mentsus.each do |m|
+            if m.get_pais.has?(@pai)
+                #その面子が副露されていない
+                if !m.fooroh
+                    if m.get_kind == 0
+                        #対子だった場合→単騎待ち(0)
+                        machi[0] =true
+                    elsif m.get_kind == 3
+                        #刻子だった場合→シャンポン待ち(1)
+                        machi[1] =true
+                    elsif m.get_kind == 1
+                        #順子だった場合
+                        #その順子からツモ牌を抜く
+                        tartsu = m.get_pais.dup.delete_if{|p|p==@pai}
+                        if tartsu.first.number + tartsu.last.number == 3 || tartsu.first.number + tartsu.last.number == 17
+                            #残った二つの牌が1,2または8,9だったとき→ペンチャン待ち(2)
+                            machi[2] = true
+                        elsif (tartsu.first.number-tartsu.last.number).abs == 1
+                            #残った二つの牌が続いていたとき→両面待ち(3)
+                            machi[3] = true
+                        else
+                            #その他→カンチャン待ち
+                            machi[4] = true
+                        end
+                    end
+                end
+            end
+        end
+        return machi
+    end
 end

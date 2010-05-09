@@ -29,4 +29,8 @@ class Text
     @g = g
     @b = b
   end
+  def set_pos(x,y)
+    @x = x
+    @y = y
+  end
 end

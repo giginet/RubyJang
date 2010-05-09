@@ -1,10 +1,12 @@
 class Pai
     def initialize(t,n)
+        @x = 0
+        @y = 0
         #0萬子1索子2筒子3字牌
         @kind = t
         #普通は数字、字牌の場合は1から順に東南西北白發中
         @number = n
-        @image = set_image
+        set_image
         #赤ドラかどうか
         @red = false
     end
@@ -63,18 +65,32 @@ class Pai
         if @kind==3
             return jihais[@number]
         else
-            return "#{@number.cc}#{names[@kind]}"
+            return "#{@number.to_cc}#{names[@kind]}"
         end
     end
     #Imageオブジェクトをセットする
     def set_image
+        k = ["ms","ss","ps","ji"][@kind]
+        if jihai?
+            na = ["","e","s","w","n","haku","h","c"]
+            n = "_#{na[@number]}"
+        else
+            n = @number
+        end
+        fn = "pai/p_#{k}#{n}_0.gif"
+        @image = Image.new(0,0,fn)
+    end
+    def render
+        @image.x = @x
+        @image.y = @y
+        @image.render
     end
     #特定の牌かどうかをブールで返す
     def yaochu?
         @kind==3 || @number==1 || @number==9
     end
     def sangen?
-        @kind==3 && @number >=4
+        @kind==3 && @number >=5
     end
     def dora?
         dora = false
@@ -103,6 +119,16 @@ class Pai
         else
             return false
         end
+    end
+    #描画位置設定
+    def set_pos(x,y)
+        @x = x
+        @y = y
+        $pais.push(self)
+    end
+    #緑一色用
+    def green?
+        return (@kind == 1 && @number >=2 && @number <=8 && @number != 7) || (@kind == 3 && @number == 6)
     end
     attr_reader :kind,:number
 end

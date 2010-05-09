@@ -19,7 +19,7 @@ class Player
         @mentsu_stack = Array.new(4)
         @stack_cursol = 0
         @mentsus = Array.new
-        @cursols = [0,0,0,0]
+        @cursols = Array.new
         #和了形格納
         @agaris = Array.new
     end
@@ -33,6 +33,7 @@ class Player
     end
     #ツモる
     def tsumo(p)
+        ripai
         @pai = p
     end
     #上がっているかどうか
@@ -42,9 +43,22 @@ class Player
         return !a.empty?
     end
     def get_yaku
-        @agaris.each do |a|
-            a.get_yaku
-            puts "---------------------"
+        #高点法
+        max = 0
+        result =nil
+        if !@agaris.empty?
+            @agaris.each do |a|
+                score = a.get_score
+                if max < score[:score]
+                    max = score[:score]
+                    result = score
+                end
+            end
+            result[:yaku].each do |y|
+                Message.new("#{y.get_name}(#{y.get_fan}飜)")
+            end
+            Message.new(result[:message])
+            Message.new("#{result[:score]}点")
         end
     end
     #和了形の一覧を配列で返す
@@ -72,6 +86,13 @@ class Player
             @tmp_tehai = @tmp_tehai.pop_mentsu(head)
             #想定しうる、面子のリストを作成
             @mentsus = @tmp_tehai.search_koutsu+@tmp_tehai.search_syuntsu
+            4.times do 
+                h = Hash.new
+                @mentsus.each do |m|
+                    h[m] = false
+                end
+                @cursols.push(h)
+            end
             #再帰的に順子、刻子を発見して、tmpの長さが０になったら和了
             if @mentsus.length >= 4
                 while @stack_cursol >= 0 && !@tmp_tehai.empty?
@@ -82,9 +103,9 @@ class Player
                     #面子スタックの先頭に頭を格納
                     @mentsu_stack.unshift(head)
                     @agaris.push(Agari.new(@pais,@pai,@mentsu_stack,self))    
-                    break
+                    #break
                 end
-                @cursols = [0,0,0,0]
+                @cursols = Array.new
                 @stack_cursol = 0
                 @mentsu_stack = Array.new
             end
@@ -117,6 +138,7 @@ class Player
         if !m.nil?
             @tmp_tehai = @tmp_tehai.push_mentsu(m)
         end
+        #@cursols[@stack_cursol] = 0
         @stack_cursol -=1
     end
     #スタックに指定された面子を格納する
@@ -132,23 +154,21 @@ class Player
     end
     def search_agari
         #サーチ開始位置
-        count = 0
+        count = false
         if @stack_cursol >= 0 && @stack_cursol <4
-            st = @cursols[@stack_cursol]
-            @mentsus[st...@mentsus.length].each_with_index do |m,i|
+            @mentsus.each_with_index do |m,i|
                 #現段階の手牌でmが作れるならば、スタックに追加
                 #現カーソル位置での初期位置を現在の位置+1に
-                if @tmp_tehai.has_mentsu?(m)
-                    @cursols[@stack_cursol] = i+1
+                if @tmp_tehai.has_mentsu?(m) && !@cursols[@stack_cursol][m]
+                    @cursols[@stack_cursol][m] = true
                     next_stack(m)
-                    count +=1
+                    count = true
                     break
                 end
             end
         end
         #一つも面子が作れなかった場合は、初期位置をリセットしてスタックを戻す
-        if count == 0
-            @cursols[@stack_cursol] = 0
+        if !count
             prev_stack
         end
         return @stack_cursol > 3
@@ -177,6 +197,9 @@ class Player
     def poota?
         #十三不塔の判定
         #Mentsu.tartsu?が乗ってから作る
+    end
+    def reach?
+        return @reach
     end
     attr_reader :kaze
 end

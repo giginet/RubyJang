@@ -16,13 +16,13 @@ class Tehai < Array
     #ヤオ九牌の数を数える
     #タンヤオとか、混老頭とか、九種九牌の判定用
     def count_yaochu
-      c = 0
-      each do |p|
-        if p.yaochu?
-          c+=1
+        c = 0
+        each do |p|
+            if p.yaochu?
+                c+=1
+            end
         end
-      end
-      return c
+        return c
     end
     #対子を配列で返す
     def search_heads
@@ -48,7 +48,7 @@ class Tehai < Array
     #刻子の候補を配列で返す
     def search_koutsu
         a = Array.new
-        each do |p|
+        uniq.each do |p|
             if has_koutsu?(p)
                 a.push(Mentsu.new(p,p,p))
             end
@@ -59,9 +59,11 @@ class Tehai < Array
     def search_syuntsu
         a = Array.new
         each do |p|
-            unless (p+1).nil? || (p+2).nil? || p.kind==3
-                if count(p+1)>0 && count(p+2)>0
-                    a.push(Mentsu.new(p,p+1,p+2))
+            if !p.jihai?
+                unless (p+1).nil? || (p+2).nil? || p.kind==3
+                    if count(p+1)>0 && count(p+2)>0
+                        a.push(Mentsu.new(p,p+1,p+2))
+                    end
                 end
             end
         end

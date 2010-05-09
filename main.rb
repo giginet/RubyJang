@@ -12,7 +12,7 @@ Dir.foreach("class"){|f|
 #既存クラスのオーバーロード
 class Integer
     #数字を漢数字で返すメソッド
-    def cc
+    def to_cc
         cs =["〇","一","二","三","四","五","六","七","八","九"]
         result = String.new
         self.to_s.split(//).each do |n|
@@ -55,7 +55,7 @@ $timers = Array.new
 $frames = 0
 #Windowまわり
 SDL.init(SDL::INIT_EVERYTHING)
-SDL::WM.setCaption("STG(仮)","")
+SDL::WM.setCaption("るびじゃん！","")
 $screen = SDL.set_video_mode(SCREEN_W,SCREEN_H,16,SDL::SWSURFACE)
 SDL::Mixer.open
 $effect = Fade.new
@@ -66,6 +66,7 @@ timer.reset
 #メインループ
 Scenes = {:title=>TitleScene.new,:game=>GameScene.new,:over=>OverScene.new,:config=>ConfigScene.new}
 $scene = Scenes[:title]
+h = Pai.new(1,1)
 loop do
     $input.poll
     if !$pause 
@@ -83,7 +84,7 @@ loop do
         end
     end
     $scene.render
-    $effect.render
+    #$effect.render
     timer.wait_frame do
         $screen.update_rect(0,0,0,0)
     end
