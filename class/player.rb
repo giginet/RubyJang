@@ -16,7 +16,7 @@ class Player
         @kawa = Array.new
         #和了検索用の変数群
         @tmp_tehai = Tehai.new
-        @mentsu_stack = Array.new(3)
+        @mentsu_stack = Array.new
         @stack_cursol = 0
         @mentsus = Array.new
         @cursols = Array.new
@@ -107,7 +107,6 @@ class Player
             end
         end
         if !tmp.empty?
-            puts "tmp#{tmp.length}"
             tmp.each do |stack|
                 #例のスタック法で面子が３つ作れたら、残り5枚の中で、面子できる、対子2つできる、対子一つと塔子できるのいずれかに場合分け。
                 #上記何れかならテンパイ
@@ -258,7 +257,9 @@ class Player
         @mentsus.each_with_index do |m,i|
             #現段階の手牌でmが作れるならば、スタックに追加
             if @tmp_tehai.has_mentsu?(m) && !@cursols[@stack_cursol][m]
-                @cursols[@stack_cursol][m] = true
+                @mentsus[0..i].each do |n|
+                    @cursols[@stack_cursol][n] = true
+                end
                 next_stack(m)
                 count = true
                 break
