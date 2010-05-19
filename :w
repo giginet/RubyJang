@@ -120,6 +120,7 @@ class Player
     #待ちの判定も一緒にやっちゃう
     def tempai?
         @machis.clear
+        ed = false
         #まず上がっているかどうか
         if !agari?
             tmp = Array.new
@@ -134,27 +135,30 @@ class Player
             @mentsus = @tmp_tehai.search_koutsu+@tmp_tehai.search_syuntsu
             @tmp_tehai = @pais.dup.push(@pai)
             @cursols = Array.new
-            if @mentsus.length >= 3
-                #ハッシュをリセット
-                3.times do 
-                    h = Hash.new
-                    @mentsus.each do |m|
-                        h[m] = false
-                    end
-                    @cursols.push(h)
+            3.times do 
+                h = Hash.new
+                @mentsus.each do |m|
+                    h[m] = false
                 end
-                while @stack_cursol >= 0
-                    search_tempai
-                    if @stack_cursol >= 3
-                        tmp.push(@tmp_tehai.dup) 
-                        prev_stack
-                    end
+                @cursols.push(h)
+            end
+            while !end_search?
+                search_tempai
+                if @stack_cursol >= 3
+                    tmp.push(@tmp_tehai)
+                    @tmp_tehai = @pais.dup.push(@pai)
+                    @stack_cursol = 0
                 end
+                ed = true
             end
             if !tmp.empty?
-                tmp.uniq!
                 puts tmp.length
                 tmp.each do |u|
+                    puts "-----------"
+                    u.each do |p|
+                        puts p.get_name
+                    end
+                    @tmp_tehai = u.dup
                     #例のスタック法で面子が３つ作れたら、残り5枚の中で、面子できる、対子2つできる、対子一つと塔子できるのいずれかに場合分け。
                     #上記何れかならテンパイ
                     h = @tmp_tehai.search_heads
@@ -209,33 +213,11 @@ class Player
                     end
                 elsif @tmp_tehai.count_yaochu >= 13
                     #国士のテンパイ
-                    kokushipais = [Pai.new(0,1),
-                        Pai.new(0,9),
-                        Pai.new(1,1),
-                        Pai.new(1,9),
-                        Pai.new(2,1),
-                        Pai.new(2,9),
-                        Pai.new(3,1),
-                        Pai.new(3,2),
-                        Pai.new(3,3),
-                        Pai.new(3,4),
-                        Pai.new(3,5),
-                        Pai.new(3,6),
-                        Pai.new(3,7)]
-                    if @tmp_tehai.count_yaochu_kinds == 13
+                    if @tmp_tehai.count_kinds == 13
                         #一三面待ち
-                        #全ての国士牌を待ちへ
-                        #ハードコーディング安定
-                        @machis.concat(kokushipais)
-                    elsif @tmp_tehai.count_yaochu_kinds ==12
+                    elsif @tmp_tehai.count_kinds ==12
                         #その他の待ち
-                        #国士牌から、含まれていない物を検索
-                        kokushipais.each do |p|
-                            if !@tmp_tehai.has?(p)
-                                @machis << p
-                                break
-                            end
-                        end
+
                     end
                 end
             end
@@ -249,7 +231,7 @@ class Player
     #待ち牌をArrayで返す
     #テンパイ書いてから
     def get_machi
-        return @machis.ripai
+        return @machis
     end
     #付いた役をArrayで返す
     def get_yakus
@@ -297,9 +279,6 @@ class Player
         end
         #一つも面子が作れなかった場合は、初期位置をリセットしてスタックを戻す
         if !count
-            @mentsus.each do |m|
-                @cursols[@stack_cursol][m] = false
-            end
             prev_stack
         end
         return @stack_cursol > 3
@@ -307,26 +286,37 @@ class Player
     def search_tempai
         #サーチ開始位置
         count = false
-        #if @stack_cursol >= 0 && @stack_cursol <3
-        @mentsus.each_with_index do |m,i|
-            #現段階の手牌でmが作れるならば、スタックに追加
-            if @tmp_tehai.has_mentsu?(m) && !@cursols[@stack_cursol][m]
+        if @stack_cursol >= 0 && @stack_cursol <3
+            @mentsus.each_with_index do |m,i|
+                #現段階の手牌でmが作れるならば、スタックに追加
+                #現カーソル位置での初期位置を現在の位置+1に
                 @cursols[@stack_cursol][m] = true
-                next_stack(m)
-                count = true
-                break
+                if @tmp_tehai.has_mentsu?(m) && !@cursols[@stack_cursol][m]
+                    next_stack(m)
+                    count = true
+                    break
+                end
             end
         end
-        #end
         #一つも面子が作れなかった場合は、初期位置をリセットしてスタックを戻す
         if !count
-            @mentsus.each do |m|
-                @cursols[@stack_cursol][m] = false
-            end
             prev_stack
         end
         return @stack_cursol > 2
     end
+    def end_search?
+        flag = true
+        @cursols.each do |h|
+            h.each do |k,v|
+                if !v
+                    flag = false
+                    break
+                end
+            end
+        end
+        return flag
+    end
+
     def kokushi?
         #国士無双の判定
         r = false

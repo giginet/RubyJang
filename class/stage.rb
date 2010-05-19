@@ -66,7 +66,6 @@ class Stage
                 Message.new("テンパってる")
               $players[0].get_machi.each do |p|
                 Message.new(p.get_name)
-                puts p.get_name
               end
             else
               Message.new("テンパってない")

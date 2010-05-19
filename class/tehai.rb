@@ -24,6 +24,10 @@ class Tehai < Array
         end
         return c
     end
+    def count_yaochu_kinds
+      array = self.dup
+      return array.delete_if{|p|!p.yaochu?}.count_kinds
+    end
     #対子を配列で返す
     def search_heads
         a = Array.new

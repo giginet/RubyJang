@@ -2,7 +2,7 @@
 require "class/check.rb"
 class Agari
     include Check
-    def initialize(tehai,tsumohai,mentsus,player,tsumo=true)
+    def initialize(tehai,tsumohai,mentsus,player,tsumo=false)
         @pais = tehai
         @pai = tsumohai
         @tehai = @pais.dup.push(@pai)
