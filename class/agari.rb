@@ -162,7 +162,7 @@ class Agari
                 @score = 32000 
             end
         else
-            @mes = "#{@fu}符#{@fan}飜"
+            @mes = "#{@fu.to_cc}符#{@fan.to_cc}飜"
         end
     end
     def get_machi

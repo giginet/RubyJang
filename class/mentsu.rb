@@ -69,5 +69,26 @@ class Mentsu
         end
         puts "--------------"
     end
+    #塔子の足りない牌について調べる
+    def get_machi
+        if @kind == 4
+            @pais.ripai
+            #二つの牌が隣接してるとき
+            if (@pais.last.number - @pais.first.number).abs == 1
+                if !@pais.first.hashihai?
+                    return [@pais.first-1,@pais.last+1]
+                else
+                    if @pais.first.number == 9
+                        return [@pais.first-1]
+                    else
+                        return [@pais.last+1]
+                    end
+                end
+                #二つの牌が隣接していないとき、間の牌が待ち牌
+            else
+                return [@pais.first+1]
+            end
+        end
+    end
     attr_reader :fooroh
 end

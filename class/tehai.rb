@@ -34,6 +34,22 @@ class Tehai < Array
         end
         return a
     end
+    #塔子を配列で返す
+    def search_tartsu
+        a = Array.new
+        each do |p|
+            each do |q|
+                if !p.jihai? && !q.jihai?
+                    if p.number > q.number
+                        if (p.number-q.number).abs < 3
+                            a.push(Mentsu.new(p,q))
+                        end
+                    end
+                end
+            end
+        end
+        return a
+    end
     #手牌の中に何種類の牌があるかを返す。
     def count_kinds
         return uniq.length
@@ -79,6 +95,9 @@ class Tehai < Array
             mentsu.get_pais.get_hash.each do |k,v|
                 v.times do
                     delete_at(index(k))
+                    each do |p|
+                        p.get_name
+                    end
                 end
             end
         end
