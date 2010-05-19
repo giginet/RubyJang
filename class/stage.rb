@@ -58,19 +58,7 @@ class Stage
         $players[0].tsumo(@yama.shift)
         $players[0].debug
         $players[0].render_tehai
-        if $players[0].agari?
-            puts "和了"
-        else
-            puts "テンパイ判定へ"
-            if $players[0].tempai?
-                Message.new("テンパってる")
-              $players[0].get_machi.each do |p|
-                Message.new(p.get_name)
-              end
-            else
-              Message.new("テンパってない")
-            end
-        end
+        $players[0].check
     end
     #洗牌
     def shuffle

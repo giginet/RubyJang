@@ -2,7 +2,7 @@
 require "class/check.rb"
 class Agari
     include Check
-    def initialize(tehai,tsumohai,mentsus,player,tsumo=false)
+    def initialize(tehai,tsumohai,mentsus,player,tsumo=true)
         @pais = tehai
         @pai = tsumohai
         @tehai = @pais.dup.push(@pai)
@@ -44,9 +44,6 @@ class Agari
                 #七対子形の場合
                 @yakus.push(Yaku.new("七対子",2))
                 @tiitoi = true
-            end
-            @mentsus.each do |m|
-                m.ex_pais
             end
             check_yaku
         end
