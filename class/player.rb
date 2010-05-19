@@ -74,7 +74,6 @@ class Player
     #和了、テンパイ系の一覧を配列で返す
     def get_agari
         @agaris.clear
-        @machis.clear
         tmp = Array.new
         @tmp_tehai = @pais.dup.push(@pai)
         heads = @tmp_tehai.search_heads
@@ -113,7 +112,7 @@ class Player
                 #1面子1対子なら和了
                 u = @pais.dup.push(@pai)
                 stack.each do |m|
-                    u.pop_mentsu(m)
+                  u.pop_mentsu(m)
                 end
                 @tmp_tehai = u.dup
                 heads = @tmp_tehai.search_heads
@@ -228,13 +227,12 @@ class Player
     end
     #点数を返す
     def get_score
-        return @score
     end
     #スタックを一つ前に戻すメソッド
     #既にスタックに入ってる一番上の面子を取り出して、手牌に書き戻す
     def prev_stack
         m = @mentsu_stack.pop 
-        if !m.nil?
+       if !m.nil?
             @tmp_tehai = @tmp_tehai.push_mentsu(m)
         end
         @stack_cursol -=1
@@ -270,12 +268,12 @@ class Player
         if !count
             st = 0
             @mentsus.each_with_index do |m,i|
-                if @cursols[@stack_cursol-1][m]
-                    st = i+1
-                end
+              if @cursols[@stack_cursol-1][m]
+                  st = i+1
+              end
             end
             @mentsus[st..@mentsus.length].each do |m|
-                @cursols[@stack_cursol][m] = false
+              @cursols[@stack_cursol][m] = false
             end
             prev_stack
         end
