@@ -6,6 +6,9 @@ class Pai
         @kind = t
         #普通は数字、字牌の場合は1から順に東南西北白發中
         @number = n
+        @gtype = 0
+        @back = false
+        @cursol = false
         set_image
         #赤ドラかどうか
         @red = false
@@ -91,15 +94,31 @@ class Pai
     end
     #Imageオブジェクトをセットする
     def set_image
-        k = ["ms","ss","ps","ji"][@kind]
-        if jihai?
-            na = ["","e","s","w","n","haku","h","c"]
-            n = "_#{na[@number]}"
+        if !@back
+            k = ["ms","ss","ps","ji"][@kind]
+            if jihai?
+                na = ["","e","s","w","n","haku","h","c"]
+                n = "_#{na[@number]}"
+            else
+                n = @number
+            end
+            fn = "pai/p_#{k}#{n}_#{@gtype}.gif"
         else
-            n = @number
+            fn = "pai/p_bk_#{@gtype}.gif"
         end
-        fn = "pai/p_#{k}#{n}_0.gif"
         @image = Image.new(0,0,fn)
+    end
+    def change_image(n)
+        @gtype = n
+        set_image
+    end
+    def set_back
+        @back = true
+        set_image
+    end
+    def set_front
+        @back = false
+        set_image
     end
     #牌を描画する
     def render
@@ -113,6 +132,22 @@ class Pai
         @y = y
         $pais.push(self)
     end
+    def get_pos
+        return {:x=>@x,:y=>@y}
+    end
+    #カーソルが当たっているかどうか
+    def hit_cursol?
+        x = SDL::Mouse.state[0]
+        y = SDL::Mouse.state[1]
+        return @x <= x && x <= @x+@image.w && @y <= y && y <= @y+@image.h && @cursol
+    end
+    def enable_cursol
+        @cursol = true
+    end
+    def disable_cursol
+        @cursol = false
+    end
+
     #特定の牌かどうかをブールで返す
     def yaochu?
         @kind==3 || @number==1 || @number==9

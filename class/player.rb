@@ -1,6 +1,7 @@
 class Player
-    def initialize(n)
-        #プレイヤー番号（東南西北順）
+    def initialize(n,k)
+        #プレイヤー番号（東南西北順)
+        #自分は常に0
         @number = n
         #手牌
         @pais = Tehai.new
@@ -11,7 +12,7 @@ class Player
         @score = 25000
         #立直後の打順
         @reach_count = 0
-        @kaze = n
+        @kaze = k
         #河
         @kawa = Array.new
         #和了検索用の変数群
@@ -38,6 +39,25 @@ class Player
         ripai
         @pai = p
     end
+    #指定された牌を打牌する
+    def dahai(p)
+        if (@pais.dup<<@pai).has?(p)
+            @pais << @pai
+            @pai = nil
+            d = @pais.delete_at(@pais.index(p))
+            if @number == 0
+                l = @kawa.length
+                x = 150+l%6*33
+                y = 330+59*(l/6).floor
+                d.set_pos(x,y)
+                d.disable_cursol
+            end
+            @kawa.push(d)
+            d.change_image(1)
+            ripai
+            render_tehai
+        end
+    end
     #和了、テンパイの判定
     def check
         get_agari
@@ -48,8 +68,6 @@ class Player
             get_machi.each do |m|
                 Message.new(m.get_name)
             end
-        else
-            Message.new("テンパってない")
         end
     end
     def get_yaku
@@ -285,6 +303,13 @@ class Player
     end
     def reach?
         return @reach
+    end
+    def get_tehai
+        if @pai.nil?
+            return @pais.dup 
+        else
+            return @pais.dup<<@pai 
+        end
     end
     attr_reader :kaze
 end

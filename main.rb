@@ -43,10 +43,8 @@ class Hash
     end
 end
 #定数
-SCREEN_W = 640
-SCREEN_H = 480
-STAGE_X = 640
-STAGE_Y = 4800
+SCREEN_W = 800
+SCREEN_H = 600
 HOLIZON = 400
 RATE = 30
 puts SDL::Joystick.num

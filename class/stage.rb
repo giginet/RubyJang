@@ -2,18 +2,45 @@
 class Stage
     def initialize
         $stage = self
+        #現在、何順目か
         @turn = 0
+        #現在、誰が打っているか
+        @phase = 0
+        @player = $players[0]
         #壁牌
         @yama = Array.new
         #場風
         @bakaze = 0
-        @kyoku = 0
+        @kyoku = 1
         @honba = 0
         @doras = Array.new
         @uradoras = Array.new
         #何回カンしたか
         @kan_count = 0
         set
+    end
+    def act
+        if @player.act
+          next_player
+        end
+    end
+    def next_player
+        @phase=(@phase+1)%4
+        phase_start
+    end
+    def phase_start
+        @player = $players[@phase]
+        @player.start
+        if @phase==0
+            #最初の番の時、ターン数を加算
+            @turn +=1
+        end
+        #ツモってくる
+        @player.tsumo(@yama.shift)
+        #@who.debug
+        @player.render_tehai
+        #和了、テンパイチェック
+        @player.check
     end
     #局の最初に呼び出される
     def set
@@ -34,18 +61,18 @@ class Stage
         #洗牌
         shuffle
         #ドラをセット
-        (126..133).to_a.each do |p|
-            if p%2==0
+        @yama[124..131].each_with_index do |p,i|
+            if i%2==0
                 @doras.unshift(p)
             else
                 @uradoras.unshift(p)
             end
         end
+        set_wanpai
         #プレイヤーに牌を配る
         (0...13).to_a.each do |i|
             if i==12
-                (0...4).to_a.each do |j|
-                    p = $players[j]
+                $players.to_a.each do |p|
                     p.push_tehai(@yama.shift)
                 end
             else
@@ -55,10 +82,7 @@ class Stage
                 end
             end
         end
-        $players[0].tsumo(@yama.shift)
-        $players[0].debug
-        $players[0].render_tehai
-        $players[0].check
+        phase_start
     end
     #洗牌
     def shuffle
@@ -74,6 +98,37 @@ class Stage
             end
         end
         return result
+    end
+    #王牌の描画
+    def set_wanpai 
+        #122~135が王牌
+        @yama[122..135].reverse.each_with_index do |p,i|
+            p.change_image(1)
+            p.set_back
+            if i%2 ==1
+                x = 500+(i/2).floor*33
+                y = 200
+            elsif i%2 == 0
+                x = 500+(i/2).floor*33
+                y = 215
+            end
+            p.set_pos(x,y)
+            #ドラ表示牌を表にする
+            (0..@kan_count).each do |i|
+                @yama[130-i*2].set_front
+            end
+        end
+    end
+    def get_stage
+        a = ["東","南","西","北"]
+        if @honba > 0
+            return "#{a[@bakaze]}#{@kyoku.to_cc}局#{@honba.to_cc}本場"
+        else
+            return "#{a[@bakaze]}#{@kyoku.to_cc}局"
+        end
+    end
+    def get_yama
+        return @yama[0...@yama.length-14].length
     end
     attr_reader :bakaze
 end
