@@ -191,26 +191,24 @@ class Player
                 @tmp_tehai.each do |p|
                     @machis.push(p)
                 end
-            elsif @tmp_tehai.count_yaochu == 14
-                if @tmp_tehai.count_yaochu_kinds == 13
-                    #国士無双和了形
-                    h = @tmp_tehai.search_heads
-                    @agaris.push(Agari.new(@pais,@pai,h,self))    
-                elsif @tmp_tehai.count_yaochu_kinds ==12
-                    #その他の待ち
-                    #国士牌から、含まれていない物を検索
-                    kokushipais.each do |p|
-                        if !@tmp_tehai.has?(p)
-                            @machis << p
-                            break
-                        end
-                    end
-                end
+            elsif @tmp_tehai.count_yaochu == 14 && @tmp_tehai.count_yaochu_kinds == 13
+                #国士無双和了形
+                h = @tmp_tehai.search_heads
+                @agaris.push(Agari.new(@pais,@pai,h,self))    
             elsif @tmp_tehai.count_yaochu == 13 && @tmp_tehai.count_yaochu_kinds == 13
                 #一三面待ち
                 #全ての国士牌を待ちへ
                 #ハードコーディング安定
                 @machis.concat(kokushipais)
+            elsif @tmp_tehai.count_yaochu >= 13 && @tmp_tehai.count_yaochu_kinds ==12
+                #その他の待ち
+                #国士牌から、含まれていない物を検索
+                kokushipais.each do |p|
+                    if !@tmp_tehai.has?(p)
+                        @machis << p
+                        break
+                    end
+                end
             end
         end
         @machis.uniq!
