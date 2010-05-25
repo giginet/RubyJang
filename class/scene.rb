@@ -11,23 +11,17 @@ class TitleScene
 end
 class GameScene
     def initialize
-        $pais = Array.new
         $cursols = Array.new
-        $players = Array.new
-        (0...4).to_a.each do |p|
-            if p==0
-                $players.push(Myplayer.new(p,p))
-            else
-                $players.push(NPC.new(p,p))
-            end
-        end
         @mwin = MessageWindow.new
         @stage_tx = Text.new("",620,10)
         @stage_tx.color(255,255,255)
         @yama_tx = Text.new("",620,40)
         @yama_tx.color(255,255,255)
+        @turn_tx = Text.new("",620,70)
+        @turn_tx.color(255,255,255)
         @pai_cursol = Cursol.new
         $stage = Stage.new
+        @chip = Chip.new(20,420)
     end
     def start
         #$pais = Array.new
@@ -39,15 +33,18 @@ class GameScene
     end
     def render
         $screen.fill_rect(0,0,SCREEN_W,SCREEN_H,[0,51,153])
-        $pais.each do |p|
+        $stage.render
+        $players.each do |p|
             p.render
         end
         @mwin.render
         @pai_cursol.render
+        @chip.render
         @stage_tx.draw($stage.get_stage)
         @yama_tx.draw($stage.get_yama)
+        @turn_tx.draw("#{$stage.turn}順目")
     end
-    attr_reader :pai_cursol
+    attr_reader :pai_cursol,:chip
 end
 class OverScene
     def initialize

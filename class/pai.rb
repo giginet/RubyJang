@@ -130,7 +130,6 @@ class Pai
     def set_pos(x,y)
         @x = x
         @y = y
-        $pais.push(self)
     end
     def get_pos
         return {:x=>@x,:y=>@y}
@@ -187,5 +186,5 @@ class Pai
     def green?
         return (@kind == 1 && @number >=2 && @number <=8 && @number != 7) || (@kind == 3 && @number == 6)
     end
-    attr_reader :kind,:number
+    attr_reader :kind,:number,:cursol
 end

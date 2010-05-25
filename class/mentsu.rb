@@ -73,7 +73,7 @@ class Mentsu
     #塔子の足りない牌について調べる
     def get_machi
         if @kind == 4
-            @pais.ripai
+            #@pais.ripai
             #二つの牌が隣接してるとき
             if (@pais.max.number - @pais.min.number).abs == 1
                 if @pais.min.hashihai?
@@ -81,9 +81,11 @@ class Mentsu
                     return [@pais.max.next]
                 elsif @pais.max.hashihai?
                     #ペンチャン待ち(7)
-                    return [@pais.min-1]
+                    return [@pais.min.prev]
                 else
                     #両面待ち
+                    puts "あああ#{@pais.min.prev.get_name}"
+                    puts "いいい#{@pais.max.next.get_name}"
                     return [@pais.min.prev,@pais.max.next]
                 end
                 #二つの牌が隣接していないとき、間の牌が待ち牌

@@ -2,13 +2,13 @@ class MessageWindow
     def initialize 
         @message_que = Array.new
         $mwin = self
-        @sx = 18
-        @sy = 18
-        @max_line = 10
+        @sx = 520
+        @sy = 400
+        @max_line = 5
         @size = 18
         @margin = 12
         @line = 0
-        @background = Image.new(10,10,"mwindow.png")
+        @background = Image.new(@sx-5,@sy-5,"mwindow.png")
         @text = ""
         @fonts = Array.new
         (0...@max_line).to_a.each do |i|

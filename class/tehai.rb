@@ -25,8 +25,8 @@ class Tehai < Array
         return c
     end
     def count_yaochu_kinds
-      array = self.dup
-      return array.delete_if{|p|!p.yaochu?}.count_kinds
+        array = self.dup
+        return array.delete_if{|p|!p.yaochu?}.count_kinds
     end
     #対子を配列で返す
     def search_heads
@@ -43,7 +43,7 @@ class Tehai < Array
         a = Array.new
         each do |p|
             each do |q|
-                if !p.jihai? && !q.jihai?
+                if !p.jihai? && !q.jihai? && p.kind==q.kind
                     if p.number > q.number
                         if (p.number-q.number).abs < 3
                             a.push(Mentsu.new(p,q))
@@ -141,4 +141,29 @@ class Tehai < Array
     def has?(p)
         return count(p) > 0
     end
+    #最大の値を返す
+    def max
+        n = 0
+        r = 0
+        each do |p|
+            if p.number > n
+                n = p.number
+                r = p
+            end
+        end
+        return r 
+    end
+    #最小の値を返す
+    def min
+        n = 9
+        r = 0
+        each do |p|
+            if p.number < n
+                n = p.number
+                r = p
+            end
+        end
+        return r 
+    end
+
 end
