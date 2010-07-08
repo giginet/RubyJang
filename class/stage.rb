@@ -1,4 +1,5 @@
-#Stageクラス。主に場を管理。
+
+#0通常1ロン#Stageクラス。主に場を管理。
 class Stage
     def initialize
         $stage = self
@@ -7,22 +8,35 @@ class Stage
         #場風
         @bakaze = 0
         @kyoku = 1
-        @honba = 0       
+        @honba = 0 
+        @end = false
         @render = Array.new
         @next_timer = Timer.new(120)
         reset
     end
     def act
-        if !@ryukyoku
+        if !@end
             if @player.act
-                if get_yama > 0
+                #誰かが和了っているか
+                agari = false
+                $players.each do |p|
+                    if p.agari?
+                        agari = true
+                    end
+                end
+                if false && agari
+                    @next_timer.play
+                elsif get_yama > 0
                     next_player
                 else
+                    @end = true
                     @ryukyoku = true
                     Message.new("流局")
-                    @next_timer.play
                 end
             end
+        end
+        if @end && !@next_timer.move?
+            @next_timer.play
         end
         if @next_timer.up?
             @next_timer.reset
@@ -33,9 +47,10 @@ class Stage
     def render
         @render.each do |i|
             i.render
-        end
+        end 
     end
     def next_player
+        @player.turn_end
         @phase=(@phase+1)%4
         phase_start
     end
@@ -50,10 +65,13 @@ class Stage
         @kan_count = 0
         @render = Array.new
         @ryukyoku = false
+        @end = false
         @yama.clear
         @render.clear
+        $mwin.hide
+        $mwin.reset
+        @last_player = 0
         set
-        @player = $players[0]
     end
     #次の局、場に進む
     def next_game
@@ -70,17 +88,20 @@ class Stage
         end
     end
     def phase_start
+        @last_player = @player
         @player = $players[@phase]
-        @player.start
         if @phase==0
             #最初の番の時、ターン数を加算
             @turn +=1
         end
         #ツモってくる
-        @player.tsumo(@yama.shift)
+        if @player.mode == 0
+            @player.tsumo(@yama.shift)
+        end
         @player.render_tehai
         #和了、テンパイチェック
         @player.check
+        @player.start
     end
     #局の最初に呼び出される
     def set
@@ -89,8 +110,7 @@ class Stage
         (0...4).to_a.each do |p|
             if p==0
                 $players.push(Myplayer.new(p,p))
-            else
-                $players.push(NPC.new(p,p))
+            else                $players.push(NPC.new(p,p))
             end
         end
         #山に牌をセットする
@@ -188,5 +208,15 @@ class Stage
     def get_player
         return @phase
     end
-    attr_reader :bakaze,:turn
+    def change_player(n,mode=0)
+        @player.turn_end
+        if @phase!=0 && @phase > n
+            @turn +=1
+        end
+        @phase = n
+        $players[n].mode = mode
+        phase_start
+    end
+    attr_reader :bakaze,:turn,:last_player
+    attr_writer :end
 end

@@ -84,8 +84,6 @@ class Mentsu
                     return [@pais.min.prev]
                 else
                     #両面待ち
-                    puts "あああ#{@pais.min.prev.get_name}"
-                    puts "いいい#{@pais.max.next.get_name}"
                     return [@pais.min.prev,@pais.max.next]
                 end
                 #二つの牌が隣接していないとき、間の牌が待ち牌

@@ -28,7 +28,15 @@ module Check
         return @player.reach?
     end
     #海底撈月・河底撈魚
-
+    def houtei?
+        if $stage.get_yama == 0 
+            if @tsumo 
+                @yakus.push(Yaku.new("海底撈月",1))
+            else
+                @yakus.push(Yaku.new("河底撈魚",1))
+            end
+        end
+    end
     #平和
     #面子が全て順子である
     #待ち牌が両面待ちである
@@ -415,6 +423,17 @@ module Check
         end
         return r
     end
+    def tenho?
+        puts @tsumo
+        if @player.oya? && $stage.turn == 1 && @tsumo 
+            @yakus.push(Yaku.new("天和",13))
+        end
+    end
+    def chiho?
+        if !@player.oya? && $stage.turn == 1 && @tsumo 
+            @yakus.push(Yaku.new("地和",13))
+        end
+    end
     def check_yaku
         if !@checked
             mentsumo?
@@ -441,6 +460,8 @@ module Check
             tooe?
             sushi?
             green?
+            tenho?
+            chiho?
             @checked = true
         end
     end

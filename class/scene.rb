@@ -13,6 +13,7 @@ class GameScene
     def initialize
         $cursols = Array.new
         @mwin = MessageWindow.new
+        @mwin.hide
         @stage_tx = Text.new("",620,10)
         @stage_tx.color(255,255,255)
         @yama_tx = Text.new("",620,40)
@@ -22,6 +23,7 @@ class GameScene
         @pai_cursol = Cursol.new
         $stage = Stage.new
         @chip = Chip.new(20,420)
+        @debug = Text.new("",620,100)
     end
     def start
         #$pais = Array.new
@@ -43,6 +45,7 @@ class GameScene
         @stage_tx.draw($stage.get_stage)
         @yama_tx.draw($stage.get_yama)
         @turn_tx.draw("#{$stage.turn}順目")
+        @debug.draw($my.mode)
     end
     attr_reader :pai_cursol,:chip
 end

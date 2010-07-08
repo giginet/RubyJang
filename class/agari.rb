@@ -2,13 +2,13 @@
 require "class/check.rb"
 class Agari
     include Check
-    def initialize(tehai,tsumohai,mentsus,player,tsumo=true)
+    def initialize(tehai,tsumohai,mentsus,player)
         @pais = tehai
         @pai = tsumohai
         @tehai = @pais.dup.push(@pai)
         #ツモ上がりしたかどうか
         #@tsumo = tsumo
-        @tsumo = tsumo
+        @tsumo = player.tsumo?
         #面子のスタックをそのまま格納
         #おそらく容量５で頭＋面子*4が格納されているはず
         @mentsus = mentsus.dup
@@ -20,7 +20,7 @@ class Agari
         @yakuman = false
         @fu = 20
         @fan = 0
-        @pinhuo = false
+        @pinhu = false
         @tiitoi = false
         @checked = false #役の判定が終わっているかどうか
     end
@@ -38,7 +38,10 @@ class Agari
     def get_yaku
         if @mentsus.length == 1
             #国士無双形の場合
-            kokushi?
+            if kokushi?
+              tenho?
+              chiho?
+            end
         else
             if @mentsus.length == 7
                 #七対子形の場合

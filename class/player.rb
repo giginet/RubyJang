@@ -14,7 +14,7 @@ class Player
         @reach_count = 0
         @kaze = k
         #河
-        @kawa = Array.new
+        @kawa = Tehai.new
         #和了検索用の変数群
         @tmp_tehai = Tehai.new
         @mentsu_stack = Array.new
@@ -27,6 +27,12 @@ class Player
         #待ち牌、不要牌の２つの項目を持つ配列で格納する
         @machis = Tehai.new
         @@se_dahai = SE.new("bosu20.wav")
+        @wait_timer = Timer.new(15)
+        @tsumo = true
+        #モード
+        #0通常1ロン
+        @mode = 0
+
     end
     def render
         #手牌の描画
@@ -84,12 +90,11 @@ class Player
     end
     #指定された牌を打牌する
     def dahai(p)
-        if (@pais.dup<<@pai).has?(p)
+        if !p.nil?&&(@pais.dup<<@pai).has?(p)
             @pais << @pai
             @pai = nil
             d = @pais.delete_at(@pais.index(p))
             @kawa << d
-            d.change_image(1)
             ripai
             @@se_dahai.play
             #テンパってたらもう一度待ちを持ってくる
@@ -102,11 +107,9 @@ class Player
     #和了、テンパイの判定
     def check
         get_agari
-        "ちぇっく"
         if !@agaris.empty?
-            get_yaku
+            #get_yaku
         elsif !@machis.empty?
-            Message.new("テンパってる")
             #get_machi.each do |m|
             #    Message.new(m.get_name)
             #end
@@ -367,7 +370,7 @@ class Player
         return @stack_cursol > 2
     end
     def tempai?
-        return !@machis.empty?
+        return !@machis.empty? && !agari?
     end
     def agari?
         return !@agaris.empty?
@@ -386,5 +389,55 @@ class Player
             return @pais.dup<<@pai 
         end
     end
-    attr_reader :kaze
+    #親かどうか
+    def oya?
+        return @kaze==0
+    end
+    #ロン和了の判定
+    def check_ron(p)
+        f = false
+        ##ロン和了
+        $players.each do |x|
+            if x!=self
+                x.check
+                if x.get_machi.has?(p) && !x.furiten?(p)
+                    $stage.change_player(x.number,1)
+                    puts "ロン#{p.get_name}"
+                    p.change_image(0)
+                    x.check
+                    f = true
+                end
+            end
+        end
+        return f
+    end
+    #ツモ和了かどうか
+    def tsumo?
+        return @tsumo
+    end
+    #立直の処理
+    def reach
+        @reach = true
+    end
+    def turn_end
+        @mode = 0
+    end
+    def next_player
+        return (@number+1)%4
+    end
+    #指定された牌がフリテンかどうか
+    def furiten?(p)
+        flag = false
+        #同順内フリテン
+        #現物
+        if @kawa.has?(p)
+            flag = true
+        end
+        if flag
+            puts "ふりてん#{@number}:#{p.get_name}"
+        end
+        return flag
+    end
+    attr_reader :number,:kaze,:reach_count
+    attr_accessor :mode
 end
