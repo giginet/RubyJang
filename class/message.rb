@@ -7,11 +7,10 @@ class MessageWindow
         @max_line = 5
         @size = 18
         @margin = 12
-        @line = 0
         @background = Image.new(@sx-5,@sy-5,"mwindow.png")
-        @text = ""
         @show = true
         @fonts = Array.new
+        reset
         (0...@max_line).to_a.each do |i|
             font = Text.new("",@sx,@sy+(@size+@margin)*i,@size)
             font.color(255,255,255)
@@ -32,8 +31,9 @@ class MessageWindow
         @show = false
     end
     def reset
-      @text=""
-      @message_que.clear
+        @text=""
+        @line = 0
+        @message_que.clear
     end
     def render
         if @show

@@ -110,9 +110,11 @@ class Stage
         (0...4).to_a.each do |p|
             if p==0
                 $players.push(Myplayer.new(p,p))
-            else                $players.push(NPC.new(p,p))
+            else
+                $players.push(NPC.new(p,p))
             end
         end
+        $players.map{|p|p.reset}
         #山に牌をセットする
         4.times do 
             (0..3).to_a.each do |n|

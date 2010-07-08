@@ -47,6 +47,7 @@ class Myplayer < Player
         super
         if !reach?
             #通常時
+            #牌を選ぶ
             if @mode ==0
                 if SDL::Mouse.state[2]
                     if !@press
@@ -73,15 +74,17 @@ class Myplayer < Player
             end
         end
         press = nil
+        #
         @buttons.each do |b|
             x = b.act
             if !x.nil?
                 press = x
             end
-        end
-        #ボタンを押して、nil以外が帰ってきたら
-        if !press.nil?
-            push_button(press)
+            #ボタンを押して、nil以外が帰ってきたら
+            if !press.nil?
+                push_button(press)
+            end
+
         end
         return ed
     end
@@ -116,7 +119,7 @@ class Myplayer < Player
     end
     #手牌をデバッグ用の牌にする
     def debug
-        if false
+        if true
             @pais = Tehai.new([
                               Pai.new(0,1),
                               Pai.new(0,9),
@@ -150,6 +153,9 @@ class Myplayer < Player
             #カン
         elsif kind==3
             #ロン
+            puts "aaaaaaaaaaa"
+            tsumo(@tmp)
+            @tmp = false
             check
             get_yaku
             @tsumo = false

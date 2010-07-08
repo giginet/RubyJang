@@ -7,12 +7,19 @@ class Player
         @pais = Tehai.new
         #ツモ牌
         @pai
-        @reach = false
-        @menzen = true
         @score = 25000
+        @kaze = k
+        @@se_dahai = SE.new("bosu20.wav")
+        @wait_timer = Timer.new(15)
+        reset
+    end
+    def reset 
         #立直後の打順
         @reach_count = 0
-        @kaze = k
+        @tmp = nil
+        @reach = false
+        @menzen = true
+        @tsumo = true
         #河
         @kawa = Tehai.new
         #和了検索用の変数群
@@ -26,13 +33,9 @@ class Player
         #待ち牌
         #待ち牌、不要牌の２つの項目を持つ配列で格納する
         @machis = Tehai.new
-        @@se_dahai = SE.new("bosu20.wav")
-        @wait_timer = Timer.new(15)
-        @tsumo = true
         #モード
         #0通常1ロン
         @mode = 0
-
     end
     def render
         #手牌の描画
@@ -402,6 +405,7 @@ class Player
                 x.check
                 if x.get_machi.has?(p) && !x.furiten?(p)
                     $stage.change_player(x.number,1)
+                    x.set_tmp(p)
                     puts "ロン#{p.get_name}"
                     p.change_image(0)
                     x.check
@@ -437,6 +441,10 @@ class Player
             puts "ふりてん#{@number}:#{p.get_name}"
         end
         return flag
+    end
+    #テンポラリ領域に牌を格納
+    def set_tmp(p)
+        @tmp = p
     end
     attr_reader :number,:kaze,:reach_count
     attr_accessor :mode
